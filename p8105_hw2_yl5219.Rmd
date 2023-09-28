@@ -4,4 +4,65 @@ author: "Yuqing Liu"
 date: "2023-09-27"
 output: html_document
 ---
+```{r library}
+library(tidyverse)
+```
 
+# Problem 1
+import three datasets:
+```{r import data}
+pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv")
+unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")
+snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")
+```
+
+clean the data in pols-month:
+```{r import and clean pols-month.csv dataset}
+pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv") |> janitor::clean_names() |>
+  separate(mon, into = c("year", "month", "day"))|>
+  mutate(
+    month =
+      case_match(
+        month,
+        "01" ~ "January",
+        "02" ~ "February",
+        "03" ~ "March",
+        "04" ~ "April",
+        "05" ~ "May",
+        "06" ~ "June",
+        "07" ~ "July",
+        "08" ~ "August",
+        "09" ~ "September",
+        "10" ~ "October",
+        "11" ~ "November",
+        "12" ~ "December")
+      )|>
+  mutate(president = ifelse(prez_dem == 1, "dem", "gop"))  |>
+  select(-prez_dem, -prez_gop, -day)
+```
+
+clean the data in snp:
+```{r import and clean snp.csv dataset}
+snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
+  janitor::clean_names()|>
+  separate(date, into = c("month", "day", "year"))|>
+  mutate(
+    month =
+      case_match(
+        month,
+        "1" ~ "January",
+        "2" ~ "February",
+        "3" ~ "March",
+        "4" ~ "April",
+        "5" ~ "May",
+        "6" ~ "June",
+        "7" ~ "July",
+        "8" ~ "August",
+        "9" ~ "September",
+        "10" ~ "October",
+        "11" ~ "November",
+        "12" ~ "December")
+      )|>select(-day)|>
+  select(year, month, everything())
+table(snp$month)
+```

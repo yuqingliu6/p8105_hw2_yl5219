@@ -357,7 +357,74 @@ display: none;
 </div>
 
 
-
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.3     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ purrr     1.0.2     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+<div id="problem-1" class="section level1">
+<h1>Problem 1</h1>
+<p>import three datasets:</p>
+<pre class="r"><code>pols_month = read.csv(file = &quot;./fivethirtyeight_datasets/pols-month.csv&quot;)
+unemployment = read.csv(file = &quot;./fivethirtyeight_datasets/unemployment.csv&quot;)
+snp = read.csv(file = &quot;./fivethirtyeight_datasets/snp.csv&quot;)</code></pre>
+<p>clean the data in pols-month:</p>
+<pre class="r"><code>pols_month = read.csv(file = &quot;./fivethirtyeight_datasets/pols-month.csv&quot;) |&gt; janitor::clean_names() |&gt;
+  separate(mon, into = c(&quot;year&quot;, &quot;month&quot;, &quot;day&quot;))|&gt;
+  mutate(
+    month =
+      case_match(
+        month,
+        &quot;01&quot; ~ &quot;January&quot;,
+        &quot;02&quot; ~ &quot;February&quot;,
+        &quot;03&quot; ~ &quot;March&quot;,
+        &quot;04&quot; ~ &quot;April&quot;,
+        &quot;05&quot; ~ &quot;May&quot;,
+        &quot;06&quot; ~ &quot;June&quot;,
+        &quot;07&quot; ~ &quot;July&quot;,
+        &quot;08&quot; ~ &quot;August&quot;,
+        &quot;09&quot; ~ &quot;September&quot;,
+        &quot;10&quot; ~ &quot;October&quot;,
+        &quot;11&quot; ~ &quot;November&quot;,
+        &quot;12&quot; ~ &quot;December&quot;)
+      )|&gt;
+  mutate(president = ifelse(prez_dem == 1, &quot;dem&quot;, &quot;gop&quot;))  |&gt;
+  select(-prez_dem, -prez_gop, -day)</code></pre>
+<p>clean the data in snp:</p>
+<pre class="r"><code>snp = read.csv(file = &quot;./fivethirtyeight_datasets/snp.csv&quot;)|&gt;
+  janitor::clean_names()|&gt;
+  separate(date, into = c(&quot;month&quot;, &quot;day&quot;, &quot;year&quot;))|&gt;
+  mutate(
+    month =
+      case_match(
+        month,
+        &quot;1&quot; ~ &quot;January&quot;,
+        &quot;2&quot; ~ &quot;February&quot;,
+        &quot;3&quot; ~ &quot;March&quot;,
+        &quot;4&quot; ~ &quot;April&quot;,
+        &quot;5&quot; ~ &quot;May&quot;,
+        &quot;6&quot; ~ &quot;June&quot;,
+        &quot;7&quot; ~ &quot;July&quot;,
+        &quot;8&quot; ~ &quot;August&quot;,
+        &quot;9&quot; ~ &quot;September&quot;,
+        &quot;10&quot; ~ &quot;October&quot;,
+        &quot;11&quot; ~ &quot;November&quot;,
+        &quot;12&quot; ~ &quot;December&quot;)
+      )|&gt;select(-day)|&gt;
+  select(year, month, everything())
+table(snp$month)</code></pre>
+<pre><code>## 
+##     April    August  December  February   January      July      June     March 
+##        66        65        65        66        66        66        66        66 
+##       May  November   October September 
+##        66        65        65        65</code></pre>
+</div>
 
 
 
