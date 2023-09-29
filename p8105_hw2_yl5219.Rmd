@@ -24,18 +24,18 @@ pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv") |> jan
     month =
       case_match(
         month,
-        "01" ~ "January",
-        "02" ~ "February",
-        "03" ~ "March",
-        "04" ~ "April",
-        "05" ~ "May",
-        "06" ~ "June",
-        "07" ~ "July",
-        "08" ~ "August",
-        "09" ~ "September",
-        "10" ~ "October",
-        "11" ~ "November",
-        "12" ~ "December")
+        "01" ~ "jan",
+        "02" ~ "feb",
+        "03" ~ "mar",
+        "04" ~ "apr",
+        "05" ~ "may",
+        "06" ~ "jun",
+        "07" ~ "jul",
+        "08" ~ "aug",
+        "09" ~ "sep",
+        "10" ~ "oct",
+        "11" ~ "nov",
+        "12" ~ "dec")
       )|>
   mutate(president = ifelse(prez_dem == 1, "dem", "gop"))  |>
   select(-prez_dem, -prez_gop, -day)
@@ -50,18 +50,18 @@ snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
     month =
       case_match(
         month,
-        "1" ~ "January",
-        "2" ~ "February",
-        "3" ~ "March",
-        "4" ~ "April",
-        "5" ~ "May",
-        "6" ~ "June",
-        "7" ~ "July",
-        "8" ~ "August",
-        "9" ~ "September",
-        "10" ~ "October",
-        "11" ~ "November",
-        "12" ~ "December")
+        "1" ~ "jan",
+        "2" ~ "feb",
+        "3" ~ "mar",
+        "4" ~ "apr",
+        "5" ~ "may",
+        "6" ~ "jun",
+        "7" ~ "jul",
+        "8" ~ "aug",
+        "9" ~ "sep",
+        "10" ~ "oct",
+        "11" ~ "nov",
+        "12" ~ "dec")
       )|>select(-day)|>
   select(year, month, everything())
 ```
@@ -71,10 +71,17 @@ clean the data in unemployment:
 unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")|>
   janitor::clean_names()|>
   pivot_longer(
-    unemployment,
-    Jan:Dec,
+    jan:dec,
     names_to = "month",
-    values_to = "")
+    values_to = "unemployment")
 ```
+
+join the datasets:
+```{r}
+df_merged <- merge(pols_month, snp, all.x = TRUE) 
+df_merged <- merge(df_merged, unemployment, all.x = TRUE)
+```
+
+
 
 
