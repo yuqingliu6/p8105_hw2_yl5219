@@ -64,5 +64,17 @@ snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
         "12" ~ "December")
       )|>select(-day)|>
   select(year, month, everything())
-table(snp$month)
 ```
+
+clean the data in unemployment:
+```{r import and clean unemployment.csv dataset}
+unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")|>
+  janitor::clean_names()|>
+  pivot_longer(
+    unemployment,
+    Jan:Dec,
+    names_to = "month",
+    values_to = "")
+```
+
+
