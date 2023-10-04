@@ -167,4 +167,163 @@ gwynnda_trash_wheel = read_excel("./202309 Trash Wheel Collection Data.xlsx",
 
 gwynnda_trash_wheel
 ```
+### combine datasets
+
+* We first create a additional variable `trash_wheel_type` to all datasets to keep track of which is originated from which Trash Wheel dataset. 
+
+* Combine the three Trash Wheel datasets to produce a single tidy dataset `trash_wheel_merged`. 
+
+```{r}
+mr_trash_wheel=mr_trash_wheel|>
+  mutate(trash_wheel_type="Mr Trash Wheel")
+
+professor_trash_wheel=professor_trash_wheel|>
+  mutate(trash_wheel_type="Professor Trash Wheel",
+         year=as.character(year))
+
+gwynnda_trash_wheel=gwynnda_trash_wheel|>
+  mutate(trash_wheel_type="Gwynnda Trash Wheel",
+         year=as.character(year))
+
+trash_wheel_merged = 
+  bind_rows(mr_trash_wheel, professor_trash_wheel, gwynnda_trash_wheel) |>
+  janitor::clean_names() |>
+  select(trash_wheel_type, everything()) 
+
+trash_wheel_merged
+```
+
+### discussion
+
+* The resulting dataset has `r nrow(trash_wheel_merged)` rows and `r ncol(trash_wheel_merged)` columns. So, it has `r nrow(trash_wheel_merged)` observations. 
+
+* The key variables includes `trash_wheel_type`, `dumpster`, `month`, `year`, `date`, `weight_tons`, `volume_cubic_yards`, `plastic_bottles`, `polystyrene`, `cigarette_butts`, `glass_bottles`, `plastic_bags`, `wrappers`, `sports_balls`, `homes_powered`.
+
+* The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_wheel$weight_tons)` tons.
+
+* The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(subset(gwynnda_trash_wheel, month == "July" & year == "2021" )$cigarette_butts)`.
+
+# Problem 3
+### MCI_baseline
+
+* Import the dataset `MCI_baseline.csv` using `read.csv()`. Skip the first row by `skip=1`.
+* Clean variables names by `janitor::clean_names()`.
+* Make sure sex is appropriate encoded (i.e. not numeric) by matching 1 to male and 0 to female, and make `sex` as a factor variable through `mutate(sex = case_match(sex, 1 ~ "male", 0 ~ "female"), sex = as.factor(sex))`.
+* Make sure APOE4 carrier status is appropriate encoded (i.e. not numeric) by matching 1 to apoe4 carrier and 0 to apoe4 non-carrier, and make `apeo4` as a factor variable through `mutate(apoe4 = case_match(apoe4, 1 ~ "apoe4 carrier", 0 ~ "apoe4 non-carrier"), apoe4 = as.factor(apoe4))`.
+* Remove any participants who do not meet the stated inclusion criteria (i.e. no MCI at baseline) by dropping observations with missing value in `age_at_onset` by replacing . with NA and then `drop_na()`.
+
+```{r}
+mci_baseline = read.csv(file = "./data_mci/MCI_baseline.csv", skip=1) |> janitor::clean_names()|>
+    mutate(
+    sex = 
+      case_match(
+        sex, 
+        1 ~ "male", 
+        0 ~ "female"),
+    sex = as.factor(sex),
+    apoe4 = 
+      case_match(
+        apoe4,
+        1 ~ "apoe4 carrier",
+        0 ~ "apoe4 non-carrier"),
+    apoe4 = as.factor(apoe4),
+    age_at_onset = ifelse(age_at_onset==".", NA, age_at_onset)
+    ) |>
+  drop_na(age_at_onset)
+
+head(mci_baseline)
+```
+
+### discussion 
+
+Important steps in the import process:
+
+* `skip=1` skips the first line of the explanation of variables when importing dataset
+* `janitor::clean_names()`converts all the variable names to lower case
+* `case_match` rewrites sex and apoe4 into what they represent and matches their meanings into their values respectively
+* `drop_na(age_at_onset)`removes the row with missing value in `age_at_onset`. `drop_na` only recognizes values with NA rather than . So, we need to convert `.` to `NA` using a `ifelse()` statement before dropping NA. 
+
+Relevant features of the dataset:
+
+* The dataset has `r nrow(mci_baseline)` observations and `r ncol(mci_baseline)` variables.
+* The dataset has variables including `id`, `current_age`, `sex`,`education`, `apoe4` (whether a person is apoe4 carrier or non-carrier), `age_at_onset`.
+
+Answering the questions:
+
+* From the number of observations in the raw dataset before data cleaning, we know there were 483 participants that were recruited.
+* After data cleaning, we know `r nrow(mci_baseline)` of the participants developed MCI.
+* The average baseline age is `r round(mean(mci_baseline$current_age, na.rm = TRUE),2)` years old. 
+* The proportion of women in the study that are APOE4 carriers P(apoe4 carriers|women developed mci) = `r round( nrow(mci_baseline[mci_baseline$sex == 'female' & mci_baseline$apoe4 =='apoe4 carrier', ]) / nrow(mci_baseline[mci_baseline$sex == 'female' , ]),4) `.
+
+### Biomarker
+
+Similarly, import, clean, and tidy the dataset of longitudinally observed biomarker values
+
+* Import the dataset `MCI_baseline.csv` using `read.csv()`. Skip the first row by `skip=1`.
+* Clean variables names by `janitor::clean_names()`.
+* Unify the id used in the study as `id` by `rename(id=study_id)`.
+
+```{r}
+mci_amyloid = read.csv(file = "./data_mci/mci_amyloid.csv", skip=1) |> janitor::clean_names()|>
+  rename(id=study_id)
+  
+head(mci_amyloid)
+```
+Important steps in the import process:
+
+* `skip=1` skips the first line of the explanation of variables when importing dataset
+* `janitor::clean_names()`: convert all the variable names to lower case
+
+The features of the dataset:
+
+* The dataset has `r nrow(mci_amyloid)` observations and `r ncol(mci_amyloid)` variables.
+* The dataset has variables including  `id`, `baseline`, `time_2`, `time_4`, `time_6`, `time_8`
+
+### check whether some participants appear in only one dataset
+
+* check participants that appear in only the baseline by `anti_join`
+
+```{r}
+only_mci_baseline <- anti_join(mci_baseline, mci_amyloid, by = "id")
+
+only_mci_baseline
+```
+
+* check participants that appear in only the amyloid by `anti_join` (the dataset is too long so I used `head()`)
+
+```{r}
+only_mci_amyloid <- anti_join(mci_amyloid, mci_baseline, by = "id")
+
+head(only_mci_amyloid)
+```
+* In conclusion, `r nrow(only_mci_baseline)` participants appears only in the baseline, and`r nrow(only_mci_amyloid)` participants appears only in the baseline. There do exist participants that appear in only the baseline or amyloid datasets.
+
+### combine datasets
+
+Combine the demographic and biomarker datasets 
+
+* combine the datasets by `inner_join()` so that only participants who appear in both datasets are retained
+* examine the merged dataset by `head()` because the dataset is too long
+
+```{r}
+mci_merged = inner_join(mci_baseline, mci_amyloid, by = "id")
+
+head(mci_merged)
+```
+
+
+### describe the resulting dataset
+
+* The resulting dataset `mci_merged` includes `r nrow(mci_merged)` observations, with `r ncol(mci_merged)` variables.
+* The mci_merged` dataset has variables including `id`, `current_age`, `sex`, `educations`, `apoe4` (whether a person is an apoe4 carrier or non-carrier), `age_at_onset`, `baseline`, `time_2`, `time_4`, `time_6`, `time_8`.
+
+
+### export the result
+
+* export the `mci_merged` dataset as a cvs file by `write.csv`
+
+```{r}
+write.csv(mci_merged, file = "./data_mci/mci_merged.csv", row.names = FALSE)
+```
+
 
