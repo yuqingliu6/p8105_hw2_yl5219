@@ -15,7 +15,14 @@ library(readxl)
 
 # Problem 1
 ### pols-month.csv
-clean the data in pols-month and check the first six rows using `head()`:
+clean the data in pols-month:
+
+* import the dataset by `read.csv()`
+* clean up the names by `janitor::clean_names()`
+* separate the date variable `mon` into `year`,`month`,`day` by `separate()`, and match the number of month with the abbreviated month in character by `case_match()`
+* create a `president` variable taking values gop and dem by `case_match()`
+* check the first six rows of the dataset using `head()` because the data will be very long after knit if presented
+
 ```{r import and clean pols-month.csv dataset}
 pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv") |> janitor::clean_names() |>
   separate(mon, into = c("year", "month", "day"))|>
@@ -48,6 +55,13 @@ head(pols_month)
 
 ### snp.csv
 clean and check the data in snp:
+
+* import the dataset by `read.csv()`
+* clean up the names by `janitor::clean_names()`
+* separate the date variable `mon` into `year`,`month`,`day` by `separate()`, and match the number of month with the abbreviated month in character by `case_match()`
+* remove `day` by `select(-day)`
+* organize so that year and month are the leading columns by `select(year, month, everything())`
+
 ```{r import and clean snp.csv dataset}
 snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
   janitor::clean_names()|>
@@ -76,6 +90,12 @@ head(snp)
 
 ### unemployment.csv
 clean and check the data in unemployment:
+
+* import the dataset by `read.csv()`
+* clean up the names by `janitor::clean_names()`
+* switch from “wide” to “long” format by `pivot_longer()`
+* turn `year` into a character variable by `mutate(year=as.character(year))`
+
 ```{r import and clean unemployment.csv dataset}
 unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")|>
   janitor::clean_names()|>
@@ -89,6 +109,9 @@ head(unemployment)
 ```
 ### merge datasets
 join the datasets:
+
+* merge snp into pols, and merge unemployment into the result by `left_join()`
+
 ```{r}
 df=pols_month|>
   left_join(snp,by=c("year", "month"))|>
@@ -97,14 +120,16 @@ df=pols_month|>
 head(df)
 ```
 
-### discussion
-* The dataset `pols_month` contains `r nrow(pols_month)` rows and `r ncol(pols_month)` columns. It contains variables including `year`, `month`, `gov_gop`, `sen_gop`, `rep_gop`, `gov_dem`, `sen_dem`, `rep_dem`, `president`. The range of `year` is from `r min(pols_month$year)` to `r max(pols_month$year)`.
+### Discussion
+* The dataset `pols_month` contains `r nrow(pols_month)` rows and `r ncol(pols_month)` columns. It contains variables including `year`, `month`, `gov_gop`, `sen_gop`, `rep_gop`, `gov_dem`, `sen_dem`, `rep_dem`, `president`. The range of `year` is from `r pols_month |> pull(year) |> min()` to `r pols_month |> pull(year) |> max()`.
 
-* The dataset `snp` contains `r nrow(snp)` rows and `r ncol(snp)` columns. It contains variables including `year`, `month`, `close`.The range of `year` is from `r min(snp$year)` to `r max(snp$year)`.
 
-* The dataset `unemployment` contains `r nrow(unemployment)` rows and `r ncol(unemployment)` columns. It contains variables including `year`, `month`, `unemployment`.The range of `year` is from `r min(unemployment$year)` to `r max(unemployment$year)`.
 
-* The merged dataset `df` contains `r nrow(df)` rows and `r ncol(df)` columns. It contains variables including `year`, `month`, `gov_gop`, `sen_gop`, `rep_gop`, `gov_dem`, `sen_dem`, `rep_dem`, `president`, `close`.The range of `year` is from `r min(df$year)` to `r max(df$year)`.
+* The dataset `snp` contains `r nrow(snp)` rows and `r ncol(snp)` columns. It contains variables including `year`, `month`, `close`.The range of `year` is from `r snp |> pull(year) |> min()` to `r snp |> pull(year) |> max()`.
+
+* The dataset `unemployment` contains `r nrow(unemployment)` rows and `r ncol(unemployment)` columns. It contains variables including `year`, `month`, `unemployment`.The range of `year` is from `r unemployment |> pull(year) |> min()` to `r unemployment |> pull(year) |> max()`.
+
+* The merged dataset `df` contains `r nrow(df)` rows and `r ncol(df)` columns. It contains variables including `year`, `month`, `gov_gop`, `sen_gop`, `rep_gop`, `gov_dem`, `sen_dem`, `rep_dem`, `president`, `close`.The range of `year` is from `r df |> pull(year) |> min()` to `r df |> pull(year) |> max()`.
 
 
 # Problem 2
@@ -167,7 +192,7 @@ gwynnda_trash_wheel = read_excel("./202309 Trash Wheel Collection Data.xlsx",
 
 gwynnda_trash_wheel
 ```
-### combine datasets
+### Combine datasets
 
 * We first create a additional variable `trash_wheel_type` to all datasets to keep track of which is originated from which Trash Wheel dataset. 
 
@@ -193,7 +218,7 @@ trash_wheel_merged =
 trash_wheel_merged
 ```
 
-### discussion
+### Discussion
 
 * The resulting dataset has `r nrow(trash_wheel_merged)` rows and `r ncol(trash_wheel_merged)` columns. So, it has `r nrow(trash_wheel_merged)` observations. 
 
@@ -234,7 +259,7 @@ mci_baseline = read.csv(file = "./data_mci/MCI_baseline.csv", skip=1) |> janitor
 head(mci_baseline)
 ```
 
-### discussion 
+### Discussion 
 
 Important steps in the import process:
 
@@ -251,9 +276,10 @@ Relevant features of the dataset:
 Answering the questions:
 
 * From the number of observations in the raw dataset before data cleaning, we know there were 483 participants that were recruited.
-* After data cleaning, we know `r nrow(mci_baseline)` of the participants developed MCI.
-* The average baseline age is `r round(mean(mci_baseline$current_age, na.rm = TRUE),2)` years old. 
-* The proportion of women in the study that are APOE4 carriers P(apoe4 carriers|women developed mci) = `r round( nrow(mci_baseline[mci_baseline$sex == 'female' & mci_baseline$apoe4 =='apoe4 carrier', ]) / nrow(mci_baseline[mci_baseline$sex == 'female' , ]),4) `.
+* After data cleaning, we know `r nrow(mci_baseline)` of the total participants developed MCI.
+* The average baseline age is `r round(mean(pull(mci_baseline, current_age), na.rm = TRUE),2)`
+years old. 
+* The proportion of women in the study that are APOE4 carriers P(apoe4 carriers|women developed mci) = `r round(nrow(mci_baseline[mci_baseline$sex == 'female' & mci_baseline$apoe4 =='apoe4 carrier', ]) / nrow(mci_baseline[mci_baseline$sex == 'female', ]),4) `.
 
 ### Biomarker
 
@@ -279,7 +305,7 @@ The features of the dataset:
 * The dataset has `r nrow(mci_amyloid)` observations and `r ncol(mci_amyloid)` variables.
 * The dataset has variables including  `id`, `baseline`, `time_2`, `time_4`, `time_6`, `time_8`
 
-### check whether some participants appear in only one dataset
+### Check whether some participants appear in only one dataset
 
 * check participants that appear in only the baseline by `anti_join`
 
@@ -298,7 +324,7 @@ head(only_mci_amyloid)
 ```
 * In conclusion, `r nrow(only_mci_baseline)` participants appears only in the baseline, and`r nrow(only_mci_amyloid)` participants appears only in the baseline. There do exist participants that appear in only the baseline or amyloid datasets.
 
-### combine datasets
+### Combine datasets
 
 Combine the demographic and biomarker datasets 
 
@@ -312,13 +338,13 @@ head(mci_merged)
 ```
 
 
-### describe the resulting dataset
+### Describe the resulting dataset
 
 * The resulting dataset `mci_merged` includes `r nrow(mci_merged)` observations, with `r ncol(mci_merged)` variables.
-* The mci_merged` dataset has variables including `id`, `current_age`, `sex`, `educations`, `apoe4` (whether a person is an apoe4 carrier or non-carrier), `age_at_onset`, `baseline`, `time_2`, `time_4`, `time_6`, `time_8`.
+* The `mci_merged` dataset has variables including `id`, `current_age`, `sex`, `educations`, `apoe4` (whether a person is an apoe4 carrier or non-carrier), `age_at_onset`, `baseline`, `time_2`, `time_4`, `time_6`, `time_8`.
 
 
-### export the result
+### Export the result
 
 * export the `mci_merged` dataset as a cvs file by `write.csv`
 
