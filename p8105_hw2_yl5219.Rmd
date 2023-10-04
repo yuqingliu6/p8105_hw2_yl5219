@@ -2,7 +2,7 @@
 title: "p8105_hw2_yl5219"
 author: "Yuqing Liu"
 date: "2023-09-27"
-output: html_document
+output: github_document
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r library, include=FALSE}
 library(tidyverse)
+library(readxl)
 ```
 
 # Problem 1
@@ -107,6 +108,63 @@ head(df)
 
 
 # Problem 2
+### Mr.Trash Wheel
 
+Below we read and clean Mr. Trash Wheel dataset:
 
+* specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in `read_excel()`
+* use reasonable variable names by `janitor::clean_names()`
+* omit rows that do not include dumpster-specific data by ` filter(row_number() <= n()-1)` to delete the last row
+* Home power notes mentioned each ton of trash equates to on average 500 kilowatts of electricity and an average household will use 30 kilowatts per day. Based on this information, we can calculate the number of homes powered by Mr. Trash Wheel `homes_powered` by `mutate(homes_powered=weight_tons*500/30)`.
+
+```{r}
+mr_trash_wheel = read_excel("./202309 Trash Wheel Collection Data.xlsx", 
+                            sheet="Mr. Trash Wheel", 
+                            range = cell_cols("A:N"))|>
+  janitor::clean_names()|> 
+  filter(row_number() <= n()-1)|>
+  mutate(homes_powered=weight_tons*500/30)
+
+mr_trash_wheel
+```
+
+### Professor Trash Wheel
+
+We use the same methods for Professor Trash Wheel sheet:
+
+* specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in `read_excel()`
+* use reasonable variable names by `janitor::clean_names()`
+* omit rows that do not include dumpster-specific data by ` filter(row_number() <= n()-1)` to delete the last row
+* Home power notes mentioned each ton of trash equates to on average 500 kilowatts of electricity and an average household will use 30 kilowatts per day. Based on this information, we can calculate the number of homes powered by Mr. Trash Wheel `homes_powered` by `mutate(homes_powered=weight_tons*500/30)`.
+
+```{r message=FALSE}
+professor_trash_wheel = read_excel("./202309 Trash Wheel Collection Data.xlsx", 
+                                   sheet="Professor Trash Wheel", 
+                                   range = cell_cols("A:M"))|>
+  janitor::clean_names()|> 
+  filter(row_number() <= n()-1)|>
+  mutate(homes_powered=weight_tons*500/30)
+
+professor_trash_wheel
+```
+
+### Gwynnda
+
+We use the same methods for Gwynnda Trash Wheel sheet:
+
+* specify the sheet in the Excel file and to omit non-data entries (rows with notes / figures; columns containing notes) using arguments in `read_excel()`
+* use reasonable variable names by `janitor::clean_names()`
+* omit rows that do not include dumpster-specific data by ` filter(row_number() <= n()-2)` to delete the last two rows
+* Home power notes mentioned each ton of trash equates to on average 500 kilowatts of electricity and an average household will use 30 kilowatts per day. Based on this information, we can calculate the number of homes powered by Mr. Trash Wheel `homes_powered` by `mutate(homes_powered=weight_tons*500/30)`.
+
+```{r message=FALSE}
+gwynnda_trash_wheel = read_excel("./202309 Trash Wheel Collection Data.xlsx", 
+                                   sheet="Gwynnda Trash Wheel", 
+                                   range = cell_cols("A:L"))|>
+  janitor::clean_names()|> 
+  filter(row_number() <= n()-2)|>
+  mutate(homes_powered=weight_tons*500/30)
+
+gwynnda_trash_wheel
+```
 
