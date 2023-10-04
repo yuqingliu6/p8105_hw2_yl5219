@@ -277,7 +277,7 @@ Answering the questions:
 
 * From the number of observations in the raw dataset before data cleaning, we know there were 483 participants that were recruited.
 * After data cleaning, we know `r nrow(mci_baseline)` of the total participants developed MCI.
-* The average baseline age is `r round(mean(pull(mci_baseline, current_age), na.rm = TRUE),2)`years old. 
+* The average baseline age is `r round(mean(pull(mci_baseline, current_age), na.rm = TRUE),2)` years old. 
 * The proportion of women in the study that are APOE4 carriers P(apoe4 carriers|women developed mci) = `r round(nrow(mci_baseline[mci_baseline$sex == 'female' & mci_baseline$apoe4 =='apoe4 carrier', ]) / nrow(mci_baseline[mci_baseline$sex == 'female', ]),4) `.
 
 ### Biomarker
