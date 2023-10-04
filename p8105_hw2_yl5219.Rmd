@@ -13,14 +13,8 @@ library(tidyverse)
 ```
 
 # Problem 1
-import three datasets:
-```{r import data}
-pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv")
-unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")
-snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")
-```
-
-clean the data in pols-month:
+### pols-month.csv
+clean the data in pols-month and check the first six rows using `head()`:
 ```{r import and clean pols-month.csv dataset}
 pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv") |> janitor::clean_names() |>
   separate(mon, into = c("year", "month", "day"))|>
@@ -47,12 +41,12 @@ pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv") |> jan
            0~"republican"))  |>
   select(-prez_dem, -prez_gop, -day)
 
-pols_month
+head(pols_month)
 ```
 
 
-
-clean the data in snp:
+### snp.csv
+clean and check the data in snp:
 ```{r import and clean snp.csv dataset}
 snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
   janitor::clean_names()|>
@@ -76,10 +70,11 @@ snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
       )|>select(-day)|>
   select(year, month, everything())
 
-snp
+head(snp)
 ```
 
-clean the data in unemployment:
+### unemployment.csv
+clean and check the data in unemployment:
 ```{r import and clean unemployment.csv dataset}
 unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")|>
   janitor::clean_names()|>
@@ -89,17 +84,29 @@ unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")|>
     values_to = "unemployment")|>
     mutate(year=as.character(year))
 
-unemployment
+head(unemployment)
 ```
-
+### merge datasets
 join the datasets:
 ```{r}
 df=pols_month|>
   left_join(snp,by=c("year", "month"))|>
   left_join(unemployment, by=c("year", "month"))
 
-df
+head(df)
 ```
+
+### discussion
+* The dataset `pols_month` contains `r nrow(pols_month)` rows and `r ncol(pols_month)` columns. It contains variables including `year`, `month`, `gov_gop`, `sen_gop`, `rep_gop`, `gov_dem`, `sen_dem`, `rep_dem`, `president`. The range of `year` is from `r min(pols_month$year)` to `r max(pols_month$year)`.
+
+* The dataset `snp` contains `r nrow(snp)` rows and `r ncol(snp)` columns. It contains variables including `year`, `month`, `close`.The range of `year` is from `r min(snp$year)` to `r max(snp$year)`.
+
+* The dataset `unemployment` contains `r nrow(unemployment)` rows and `r ncol(unemployment)` columns. It contains variables including `year`, `month`, `unemployment`.The range of `year` is from `r min(unemployment$year)` to `r max(unemployment$year)`.
+
+* The merged dataset `df` contains `r nrow(df)` rows and `r ncol(df)` columns. It contains variables including `year`, `month`, `gov_gop`, `sen_gop`, `rep_gop`, `gov_dem`, `sen_dem`, `rep_dem`, `president`, `close`.The range of `year` is from `r min(df$year)` to `r max(df$year)`.
+
+
+# Problem 2
 
 
 
