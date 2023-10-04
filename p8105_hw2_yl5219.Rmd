@@ -321,7 +321,7 @@ only_mci_amyloid <- anti_join(mci_amyloid, mci_baseline, by = "id")
 
 head(only_mci_amyloid)
 ```
-* In conclusion, `r nrow(only_mci_baseline)` participants appears only in the baseline, and`r nrow(only_mci_amyloid)` participants appears only in the baseline. There do exist participants that appear in only the baseline or amyloid datasets.
+* In conclusion, `r nrow(only_mci_baseline)` participants appears only in the baseline, and `r nrow(only_mci_amyloid)` participants appears only in the baseline. There do exist participants that appear in only the baseline or amyloid datasets.
 
 ### Combine datasets
 
