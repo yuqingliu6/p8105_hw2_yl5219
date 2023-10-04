@@ -357,17 +357,6 @@ display: none;
 </div>
 
 
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.3     ✔ readr     2.1.4
-## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
-## ✔ purrr     1.0.2     
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 <div id="problem-1" class="section level1">
 <h1>Problem 1</h1>
 <p>import three datasets:</p>
@@ -381,21 +370,55 @@ snp = read.csv(file = &quot;./fivethirtyeight_datasets/snp.csv&quot;)</code></pr
     month =
       case_match(
         month,
-        &quot;01&quot; ~ &quot;January&quot;,
-        &quot;02&quot; ~ &quot;February&quot;,
-        &quot;03&quot; ~ &quot;March&quot;,
-        &quot;04&quot; ~ &quot;April&quot;,
-        &quot;05&quot; ~ &quot;May&quot;,
-        &quot;06&quot; ~ &quot;June&quot;,
-        &quot;07&quot; ~ &quot;July&quot;,
-        &quot;08&quot; ~ &quot;August&quot;,
-        &quot;09&quot; ~ &quot;September&quot;,
-        &quot;10&quot; ~ &quot;October&quot;,
-        &quot;11&quot; ~ &quot;November&quot;,
-        &quot;12&quot; ~ &quot;December&quot;)
+        &quot;01&quot; ~ &quot;jan&quot;,
+        &quot;02&quot; ~ &quot;feb&quot;,
+        &quot;03&quot; ~ &quot;mar&quot;,
+        &quot;04&quot; ~ &quot;apr&quot;,
+        &quot;05&quot; ~ &quot;may&quot;,
+        &quot;06&quot; ~ &quot;jun&quot;,
+        &quot;07&quot; ~ &quot;jul&quot;,
+        &quot;08&quot; ~ &quot;aug&quot;,
+        &quot;09&quot; ~ &quot;sep&quot;,
+        &quot;10&quot; ~ &quot;oct&quot;,
+        &quot;11&quot; ~ &quot;nov&quot;,
+        &quot;12&quot; ~ &quot;dec&quot;)
       )|&gt;
   mutate(president = ifelse(prez_dem == 1, &quot;dem&quot;, &quot;gop&quot;))  |&gt;
   select(-prez_dem, -prez_gop, -day)</code></pre>
+<pre class="r"><code>pols_month = read_csv(&quot;./fivethirtyeight_datasets/pols-month.csv&quot;)|&gt;
+  janitor::clean_names()|&gt;
+  separate(mon,into=c(&quot;year&quot;,&quot;month&quot;,&quot;day&quot;),)|&gt;
+  mutate(month = month.name[as.numeric(month)],
+         president=case_match(
+           prez_dem,
+           1~&quot;democratic&quot;,
+           0~&quot;republican&quot;
+           )
+        )|&gt;
+  select(-prez_dem,-prez_gop,-day)</code></pre>
+<pre><code>## Rows: 822 Columns: 9
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl  (8): prez_gop, gov_gop, sen_gop, rep_gop, prez_dem, gov_dem, sen_dem, r...
+## date (1): mon
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>pols_month</code></pre>
+<pre><code>## # A tibble: 822 × 9
+##    year  month     gov_gop sen_gop rep_gop gov_dem sen_dem rep_dem president 
+##    &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;     
+##  1 1947  January        23      51     253      23      45     198 democratic
+##  2 1947  February       23      51     253      23      45     198 democratic
+##  3 1947  March          23      51     253      23      45     198 democratic
+##  4 1947  April          23      51     253      23      45     198 democratic
+##  5 1947  May            23      51     253      23      45     198 democratic
+##  6 1947  June           23      51     253      23      45     198 democratic
+##  7 1947  July           23      51     253      23      45     198 democratic
+##  8 1947  August         23      51     253      23      45     198 democratic
+##  9 1947  September      23      51     253      23      45     198 democratic
+## 10 1947  October        23      51     253      23      45     198 democratic
+## # ℹ 812 more rows</code></pre>
 <p>clean the data in snp:</p>
 <pre class="r"><code>snp = read.csv(file = &quot;./fivethirtyeight_datasets/snp.csv&quot;)|&gt;
   janitor::clean_names()|&gt;
@@ -404,26 +427,66 @@ snp = read.csv(file = &quot;./fivethirtyeight_datasets/snp.csv&quot;)</code></pr
     month =
       case_match(
         month,
-        &quot;1&quot; ~ &quot;January&quot;,
-        &quot;2&quot; ~ &quot;February&quot;,
-        &quot;3&quot; ~ &quot;March&quot;,
-        &quot;4&quot; ~ &quot;April&quot;,
-        &quot;5&quot; ~ &quot;May&quot;,
-        &quot;6&quot; ~ &quot;June&quot;,
-        &quot;7&quot; ~ &quot;July&quot;,
-        &quot;8&quot; ~ &quot;August&quot;,
-        &quot;9&quot; ~ &quot;September&quot;,
-        &quot;10&quot; ~ &quot;October&quot;,
-        &quot;11&quot; ~ &quot;November&quot;,
-        &quot;12&quot; ~ &quot;December&quot;)
+        &quot;1&quot; ~ &quot;jan&quot;,
+        &quot;2&quot; ~ &quot;feb&quot;,
+        &quot;3&quot; ~ &quot;mar&quot;,
+        &quot;4&quot; ~ &quot;apr&quot;,
+        &quot;5&quot; ~ &quot;may&quot;,
+        &quot;6&quot; ~ &quot;jun&quot;,
+        &quot;7&quot; ~ &quot;jul&quot;,
+        &quot;8&quot; ~ &quot;aug&quot;,
+        &quot;9&quot; ~ &quot;sep&quot;,
+        &quot;10&quot; ~ &quot;oct&quot;,
+        &quot;11&quot; ~ &quot;nov&quot;,
+        &quot;12&quot; ~ &quot;dec&quot;)
       )|&gt;select(-day)|&gt;
-  select(year, month, everything())
-table(snp$month)</code></pre>
-<pre><code>## 
-##     April    August  December  February   January      July      June     March 
-##        66        65        65        66        66        66        66        66 
-##       May  November   October September 
-##        66        65        65        65</code></pre>
+  select(year, month, everything())</code></pre>
+<pre class="r"><code>snp = read_csv(&quot;./fivethirtyeight_datasets/snp.csv&quot;)|&gt;
+  janitor::clean_names()|&gt;
+  mutate(
+    date=ifelse(as.Date(date,&quot;%m/ %d/ %y&quot;)&gt; Sys.Date(),
+                format(as.Date(date,&quot;%m/ %d/ %y&quot;),&#39;19%y-%m-%d&#39;),
+                format(as.Date(date,&quot;%m/ %d/ %y&quot;),&#39;%Y-%m-%d&#39;))
+        )|&gt;
+  separate(date,into=c(&quot;year&quot;,&quot;month&quot;,&quot;day&quot;),)|&gt;
+  mutate(month = month.name[as.numeric(month)])|&gt;
+  select(year,month, everything(),-day)</code></pre>
+<pre><code>## Rows: 787 Columns: 2
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (1): date
+## dbl (1): close
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>snp</code></pre>
+<pre><code>## # A tibble: 787 × 3
+##    year  month    close
+##    &lt;chr&gt; &lt;chr&gt;    &lt;dbl&gt;
+##  1 2015  July     2080.
+##  2 2015  June     2063.
+##  3 2015  May      2107.
+##  4 2015  April    2086.
+##  5 2015  March    2068.
+##  6 2015  February 2104.
+##  7 2015  January  1995.
+##  8 2014  December 2059.
+##  9 2014  November 2068.
+## 10 2014  October  2018.
+## # ℹ 777 more rows</code></pre>
+<p>clean the data in unemployment:</p>
+<pre class="r"><code>unemployment = read.csv(file = &quot;./fivethirtyeight_datasets/unemployment.csv&quot;)|&gt;
+  janitor::clean_names()|&gt;
+  pivot_longer(
+    jan:dec,
+    names_to = &quot;month&quot;,
+    values_to = &quot;unemployment&quot;)|&gt;
+    mutate(month=month.name[match(month,month.abb)])|&gt;
+    mutate(year=as.character(year))</code></pre>
+<p>join the datasets:</p>
+<pre class="r"><code>df=pols_month|&gt;
+  left_join(snp,by=c(&quot;year&quot;, &quot;month&quot;))|&gt;
+  left_join(unemployment, by=c(&quot;year&quot;, &quot;month&quot;))</code></pre>
 </div>
 
 

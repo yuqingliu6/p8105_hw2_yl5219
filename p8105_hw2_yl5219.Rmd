@@ -4,7 +4,11 @@ author: "Yuqing Liu"
 date: "2023-09-27"
 output: html_document
 ---
-```{r library}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r library, include=FALSE}
 library(tidyverse)
 ```
 
@@ -37,9 +41,16 @@ pols_month = read.csv(file = "./fivethirtyeight_datasets/pols-month.csv") |> jan
         "11" ~ "nov",
         "12" ~ "dec")
       )|>
-  mutate(president = ifelse(prez_dem == 1, "dem", "gop"))  |>
+  mutate(president=case_match(
+           prez_dem,
+           1~"democratic",
+           0~"republican"))  |>
   select(-prez_dem, -prez_gop, -day)
+
+pols_month
 ```
+
+
 
 clean the data in snp:
 ```{r import and clean snp.csv dataset}
@@ -64,6 +75,8 @@ snp = read.csv(file = "./fivethirtyeight_datasets/snp.csv")|>
         "12" ~ "dec")
       )|>select(-day)|>
   select(year, month, everything())
+
+snp
 ```
 
 clean the data in unemployment:
@@ -73,15 +86,20 @@ unemployment = read.csv(file = "./fivethirtyeight_datasets/unemployment.csv")|>
   pivot_longer(
     jan:dec,
     names_to = "month",
-    values_to = "unemployment")
+    values_to = "unemployment")|>
+    mutate(year=as.character(year))
+
+unemployment
 ```
 
 join the datasets:
 ```{r}
-df_merged <- merge(pols_month, snp, all.x = TRUE) 
-df_merged <- merge(df_merged, unemployment, all.x = TRUE)
-```
+df=pols_month|>
+  left_join(snp,by=c("year", "month"))|>
+  left_join(unemployment, by=c("year", "month"))
 
+df
+```
 
 
 
