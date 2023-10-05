@@ -235,6 +235,7 @@ trash_wheel_merged
 * Clean variables names by `janitor::clean_names()`.
 * Make sure sex is appropriate encoded (i.e. not numeric) by matching 1 to male and 0 to female, and make `sex` as a factor variable through `mutate(sex = case_match(sex, 1 ~ "male", 0 ~ "female"), sex = as.factor(sex))`.
 * Make sure APOE4 carrier status is appropriate encoded (i.e. not numeric) by matching 1 to apoe4 carrier and 0 to apoe4 non-carrier, and make `apeo4` as a factor variable through `mutate(apoe4 = case_match(apoe4, 1 ~ "apoe4 carrier", 0 ~ "apoe4 non-carrier"), apoe4 = as.factor(apoe4))`.
+* Keep only the participants who were free of disease when recruited into this cohort study by `filter(current_age < age_at_onset)`.
 * Remove any participants who do not meet the stated inclusion criteria (i.e. no MCI at baseline) by dropping observations with missing value in `age_at_onset` by replacing . with NA and then `drop_na()`.
 
 ```{r}
@@ -254,10 +255,34 @@ mci_baseline = read.csv(file = "./data_mci/MCI_baseline.csv", skip=1) |> janitor
     apoe4 = as.factor(apoe4),
     age_at_onset = ifelse(age_at_onset==".", NA, age_at_onset)
     ) |>
+  filter(current_age < age_at_onset)|>
   drop_na(age_at_onset)
 
 head(mci_baseline)
 ```
+Before we go into the discussion part, we can create a raw dataset which is not fully cleaned and which includes all the participants. 
+
+* We only cleans names in this raw dataset. 
+
+```{r}
+mci_baseline_raw = read.csv(file = "./data_mci/MCI_baseline.csv", skip=1) |> janitor::clean_names()|>
+    mutate(
+    sex = 
+      case_match(
+        sex, 
+        1 ~ "male", 
+        0 ~ "female"),
+    sex = as.factor(sex),
+    apoe4 = 
+      case_match(
+        apoe4,
+        1 ~ "apoe4 carrier",
+        0 ~ "apoe4 non-carrier"),
+    apoe4 = as.factor(apoe4),
+    age_at_onset = ifelse(age_at_onset==".", NA, age_at_onset)
+    )
+```
+
 
 ### Discussion 
 
@@ -265,7 +290,8 @@ Important steps in the import process:
 
 * `skip=1` skips the first line of the explanation of variables when importing dataset
 * `janitor::clean_names()`converts all the variable names to lower case
-* `case_match` rewrites sex and apoe4 into what they represent and matches their meanings into their values respectively
+* `case_match` rewrites `sex` and `apoe4` into what they represent and matches their meanings into their values respectively
+*  `filter()` keeps only the participants whose current age is smaller than the age at onset, which means they were free of disease when recruited into this cohort study. 
 * `drop_na(age_at_onset)`removes the row with missing value in `age_at_onset`. `drop_na` only recognizes values with NA rather than . So, we need to convert `.` to `NA` using a `ifelse()` statement before dropping NA. 
 
 Relevant features of the dataset:
@@ -275,10 +301,10 @@ Relevant features of the dataset:
 
 Answering the questions:
 
-* From the number of observations in the raw dataset before data cleaning, we know there were 483 participants that were recruited.
+* From the number of observations in the raw dataset before data cleaning, we know there were `r nrow(mci_baseline_raw)` participants that were recruited.
 * After data cleaning, we know `r nrow(mci_baseline)` of the total participants developed MCI.
 * The average baseline age is `r round(mean(pull(mci_baseline, current_age), na.rm = TRUE),2)` years old. 
-* The proportion of women in the study that are APOE4 carriers P(apoe4 carriers|women developed mci) = `r round(nrow(mci_baseline[mci_baseline$sex == 'female' & mci_baseline$apoe4 =='apoe4 carrier', ]) / nrow(mci_baseline[mci_baseline$sex == 'female', ]),4) `.
+* The proportion of women in the study that are APOE4 carriers P(apoe4 carriers|women developed mci) = `r round(sum(mci_baseline_raw$sex == "female" & mci_baseline_raw$apoe4 == "apoe4 carrier")/sum(mci_baseline_raw$sex == "female"),2)`.
 
 ### Biomarker
 
@@ -287,17 +313,24 @@ Similarly, import, clean, and tidy the dataset of longitudinally observed biomar
 * Import the dataset `MCI_baseline.csv` using `read.csv()`. Skip the first row by `skip=1`.
 * Clean variables names by `janitor::clean_names()`.
 * Unify the id used in the study as `id` by `rename(id=study_id)`.
+* Switch wide dataset to long dataset by `pivot_longer`
 
 ```{r}
 mci_amyloid = read.csv(file = "./data_mci/mci_amyloid.csv", skip=1) |> janitor::clean_names()|>
-  rename(id=study_id)
-  
+  rename(id=study_id) |> 
+  pivot_longer( 
+               baseline:time_8,
+               names_to = "time",
+               values_to = "amyloid") 
+
 head(mci_amyloid)
 ```
 Important steps in the import process:
 
 * `skip=1` skips the first line of the explanation of variables when importing dataset
 * `janitor::clean_names()`: convert all the variable names to lower case
+* `rename(id=study_id)`: unify the id used in the study as `id` by changing `study_id` to `id`
+* `pivot_longer`: switch wide dataset to long dataset
 
 The features of the dataset:
 
@@ -321,7 +354,7 @@ only_mci_amyloid <- anti_join(mci_amyloid, mci_baseline, by = "id")
 
 head(only_mci_amyloid)
 ```
-* In conclusion, `r nrow(only_mci_baseline)` participants appears only in the baseline, and `r nrow(only_mci_amyloid)` participants appears only in the baseline. There do exist participants that appear in only the baseline or amyloid datasets.
+* In conclusion, `r nrow(only_mci_baseline)` participants appears only in the baseline, and `r nrow(only_mci_amyloid)` participants appears only in the amyloid. There do exist participants that appear in only the baseline or amyloid datasets.
 
 ### Combine datasets
 
